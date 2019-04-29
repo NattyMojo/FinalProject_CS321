@@ -32,8 +32,22 @@ public class scannest{
 		return ret;
 	}
 	
-	// This is a tester that will be removed when it is not needed
-	public static void main(String[] args) {
-		System.out.println(Long.toBinaryString(convertBinary("GATACA")));
+	//unfinished
+	public static String convertBinaryString(long l) {
+		String ret = "";
+		String binary = Long.toBinaryString(l);
+		for(int i = 0; i < binary.length(); i+=2) {
+			if(binary.substring(i,i+2).equals("00")) {
+				ret+= "A";
+			} else if(binary.substring(i,i+2).equals("11")) {
+				ret+= "T";
+			} else if(binary.substring(i,i+2).equals("01")) {
+				ret+= "C";
+			} else if(binary.substring(i,i+2).equals("10")) {
+				ret+= "G";
+			}
+		}
+		return ret;
 	}
+	
 }

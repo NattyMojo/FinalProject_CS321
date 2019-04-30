@@ -12,7 +12,9 @@ public class BTree {
 			degree = t;
 		}
 		
-		//Finds key based on given substring and returns position in array or -1 if doesn't exist 
+		/*Finds key based on given substring and returns position in array or -1 if doesn't exist 
+		 * @param sub - substring to find in keys array
+		 */
 		public int findKey(String sub) {
 			if(keys.length < 1) {
 				return -1;
@@ -29,6 +31,9 @@ public class BTree {
 				return i;
 		}
 		
+		/*Finds and returns the left child given a key
+		 * @param  sub - substring to find in keys array
+		 */
 		public BTreeNode leftChild(String sub) {
 			int index = findKey(sub);
 			if(index == -1) {
@@ -37,6 +42,9 @@ public class BTree {
 			return children[index+1];					//TODO: I don't think I did this right please check	
 		}
 		
+		/*Finds and returns the right child given a key
+		 * @param  sub - substring to find in keys array
+		 */
 		public BTreeNode rightChild(String sub) {
 			int index = findKey(sub);
 			if(index == -1) {

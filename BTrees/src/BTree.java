@@ -37,6 +37,13 @@ public class BTree {
 			return children[index+1];					//TODO: I don't think I did this right please check	
 		}
 		
+		public BTreeNode rightChild(String sub) {
+			int index = findKey(sub);
+			if(index == -1) {
+				return null;
+			}
+			return children[index+2];					//TODO: I don't think I did this right please check	
+		}
 	}
 	
 }

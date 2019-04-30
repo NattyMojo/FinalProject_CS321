@@ -39,7 +39,7 @@ public class BTree {
 			if(index == -1) {
 				return null;
 			}
-			return children[index+1];					//TODO: I don't think I did this right please check	
+			return children[index];
 		}
 		
 		/*Finds and returns the right child given a key
@@ -50,7 +50,7 @@ public class BTree {
 			if(index == -1) {
 				return null;
 			}
-			return children[index+2];					//TODO: I don't think I did this right please check	
+			return children[index+1];
 		}
 	}
 	

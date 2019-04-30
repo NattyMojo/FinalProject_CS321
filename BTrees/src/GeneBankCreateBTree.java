@@ -16,13 +16,21 @@ public class GeneBankCreateBTree {
 		
 		//See if there is a debug level
 		if(args[3] != null) {
-			debug = Integer.parseInt(args[4]);
+			debug = Integer.parseInt(args[3]);
 		}
 		
 		//Check sequence length
 		if(seqLength < 1 || seqLength > 31) {
 			System.out.println("Error: Sequence length must be between 1 and 31 (inclusive)\n" + printUsage());
+			System.exit(0);
 		}
+		else {
+			scannest scan = new scannest(seqLength);
+		}
+		
+		
+		
+		
 		
 	}
 	

@@ -1,18 +1,22 @@
 
 public class BTree {
+	
+	public BTreeNode[] tree;
 
 	public class BTreeNode {
-		public String[] keys;
+		public int parent;
+		public TreeObject[] keys;
 		public BTreeNode[] children;
 		public int degree;
 		
 		public BTreeNode(int t) {
-			keys = new String[(2*t)-1];
+			keys = new TreeObject[(2*t)-1];			//TODO: I'm not sure is this is supposed to be a String or TreeObject
+													// I think TreeObject because it says that those are the objects we will store?
 			children = new BTreeNode[(2*t)];
 			degree = t;
 		}
 		
-		/*Finds key based on given substring and returns position in array or -1 if doesn't exist 
+		/**Finds key based on given substring and returns position in array or -1 if doesn't exist 
 		 * @param sub - substring to find in keys array
 		 */
 		public int findKey(String sub) {
@@ -20,7 +24,7 @@ public class BTree {
 				return -1;
 			}
 			int i = 0;
-			String currentKey = keys[i];
+			TreeObject currentKey = keys[i];
 			while(!(sub.equals(currentKey))) {
 				currentKey = keys[i++];
 			}
@@ -31,7 +35,7 @@ public class BTree {
 				return i;
 		}
 		
-		/*Finds and returns the left child given a key
+		/**Finds and returns the left child given a key
 		 * @param  sub - substring to find in keys array
 		 */
 		public BTreeNode leftChild(String sub) {
@@ -42,7 +46,7 @@ public class BTree {
 			return children[index];
 		}
 		
-		/*Finds and returns the right child given a key
+		/**Finds and returns the right child given a key
 		 * @param  sub - substring to find in keys array
 		 */
 		public BTreeNode rightChild(String sub) {
@@ -52,6 +56,11 @@ public class BTree {
 			}
 			return children[index+1];
 		}
+		
+	}
+	
+	public BTree(int degree) {
+		tree = new BTreeNode[3];
 	}
 	
 }

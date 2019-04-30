@@ -1,7 +1,9 @@
+import java.io.File;
 import java.util.Scanner;
 
 public class scannest{
 	
+	String string = "";
 	private Scanner scan;
 	private int subLength;
 
@@ -10,10 +12,11 @@ public class scannest{
 		subLength = len;
 	}
 	
-	public static long convertBinary(String s) {
+	public long convertBinary(String s) {
+		string = s;
 		long ret = 0;
-		for(int i = 0; i < s.length(); i++) {
-			char temp = s.charAt(i);
+		for(int i = 0; i < string.length(); i++) {
+			char temp = string.charAt(i);
 			
 			if(temp == 'A') 	   { //A is 00
 				ret = ret << 2;
@@ -33,7 +36,7 @@ public class scannest{
 	}
 	
 	//unfinished
-	public static String convertBinaryString(long l) {
+	public String convertBinaryString(long l) {
 		String ret = "";
 		String binary = Long.toBinaryString(l);
 		for(int i = 0; i < binary.length(); i+=2) {

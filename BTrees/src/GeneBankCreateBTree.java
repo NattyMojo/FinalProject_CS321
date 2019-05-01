@@ -6,7 +6,7 @@ public class GeneBankCreateBTree {
 		
 		if(args.length != 3) {
 			System.out.println(printUsage());
-			System.exit(0);
+			System.exit(-1);
 		}
 		
 		int degree = Integer.parseInt(args[0]);
@@ -22,7 +22,7 @@ public class GeneBankCreateBTree {
 		//Check sequence length
 		if(seqLength < 1 || seqLength > 31) {
 			System.out.println("Error: Sequence length must be between 1 and 31 (inclusive)\n" + printUsage());
-			System.exit(0);
+			System.exit(-1);
 		}
 		else {
 //			scannest scan = new scannest(gbkFile, seqLength);

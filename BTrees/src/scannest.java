@@ -85,7 +85,7 @@ public class scannest{
 		return endOfBlock;
 	}
 	
-	public static long convertBinary(String s) {
+	public long convertBinary(String s) {
 		long ret = 0;
 		for(int i = 0; i < s.length(); i++) {
 			char temp = s.charAt(i);
@@ -108,13 +108,19 @@ public class scannest{
 	}
 	
 
-	public static String convertString(long l) {
+	public String convertString(long l) {
 		if(l == 0) {
 			return "0";
 		}
 		
 		String ret = "";
 		String binary = Long.toBinaryString(l);
+		int offset = 2*subLength - binary.length();
+		if(offset != 0) {
+			for(int i = 0; i < offset; i++) {
+				binary = "0" + binary;
+			}
+		}
 		for(int i = 0; i < binary.length(); i+=2) {
 			if(binary.substring(i,i+2).equals("00")) {
 				ret+= "a";
@@ -132,20 +138,19 @@ public class scannest{
 	
 	//testing again
 	public static void main(String[] args) {
+
 		
-		System.out.println(Long.toBinaryString(convertBinary("a")));
-		
-//		File f = new File("test1.gbk");
-//		try {
-//			scannest testing = new scannest(f,3);
-//			
-//			while(!testing.isEnd()) {
-//				System.out.println(Long.toBinaryString(testing.nextSubstring()));
-//			}
-//			
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		}
+		File f = new File("test1.gbk");
+		try {
+			scannest testing = new scannest(f,3);
+			
+			while(!testing.isEnd()) {
+				System.out.println(testing.convertString(testing.nextSubstring()));
+			}
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	

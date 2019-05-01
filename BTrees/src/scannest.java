@@ -18,10 +18,10 @@ public class scannest{
 	
 /*  Gets and returns the DNA long based on the designated substring length
  * 	Returns a -1 if the end of the current DNA block has been reached
- * 	Have not accounted for "n" yet
  */
 	public long nextSubstring() { 
 		String temp = "";
+		
 		
 		if(pointer + subLength == currentBlock.length()) {
 			end = true;
@@ -30,6 +30,10 @@ public class scannest{
 			return -1;
 		}
 		temp = currentBlock.substring(pointer, pointer+subLength);
+		while(temp.contains("n")) {
+			pointer++;
+			temp = currentBlock.substring(pointer, pointer+subLength);
+		}
 		pointer++;
 		return this.convertBinary(temp);
 	}
@@ -41,8 +45,9 @@ public class scannest{
 		String start = "";
 		while(!start.equals("ORIGIN")) {
 			if(scan.hasNextLine()) {
-				start = scan.nextLine().substring(0, 6);
+				start = scan.nextLine().replaceAll("\\s+", "");
 			} else {
+				end = true;
 				return false;
 			}
 		}
@@ -119,7 +124,7 @@ public class scannest{
 	public static void main(String[] args) {
 
 		
-		File f = new File("test1.gbk");
+		File f = new File("test4.gbk");
 		try {
 			scannest testing = new scannest(f,3);
 			while(!testing.isEnd()) {

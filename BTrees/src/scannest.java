@@ -6,9 +6,9 @@ public class scannest{
 	
 	private Scanner scan;
 	private int subLength;
-	private String currentLine; //The current line of the dna file without spaces or line numbers
+	private String currentBlock; //The current line of the dna file without spaces or line numbers
 	private int pointer; //The scanner's progress through the current line
-	private boolean endOfBlock;
+	private boolean end; //Is true if the current block is exhausted
 
 	public scannest(File f, int len) throws FileNotFoundException {
 		scan = new Scanner(f);
@@ -23,43 +23,15 @@ public class scannest{
 	public long nextSubstring() { 
 		String temp = "";
 		
-		if(endOfBlock) return 0;
-		
-		if(pointer + subLength <= currentLine.length()) {
-			temp = currentLine.substring(pointer, pointer+subLength);
-			pointer+=subLength;
-		} else if(pointer == currentLine.length()) {
-			currentLine = scan.nextLine();
-			
-			if(currentLine.equals("//")) {
-				endOfBlock = true;
-				return 0;
-			}
-			
-			currentLine = currentLine.substring(10).replaceAll("\\s+", "");
-			pointer = 0;
-			temp = currentLine.substring(pointer, pointer+subLength);
-			pointer+=subLength;
-			
-		} else {
-			temp = currentLine.substring(pointer);
-			currentLine = scan.nextLine();
-			
-			if(currentLine.equals("//")) {
-				endOfBlock = true;
-				return convertBinary(temp);
-			}
-			
-			currentLine = currentLine.substring(10).replaceAll("\\s+", "");
-			pointer = 0;
-			
-			int overflow = temp.length();
-			temp += currentLine.substring(pointer, pointer + subLength - overflow);
-			pointer+=(subLength-overflow);
+		if(pointer + subLength == currentBlock.length()) {
+			end = true;
+		} else if(pointer + subLength > currentBlock.length()) {
+			end = true;
+			return 0;
 		}
-		
-		
-		return convertBinary(temp);
+		temp = currentBlock.substring(pointer, pointer+subLength);
+		pointer++;
+		return this.convertBinary(temp);
 	}
 	
 /*	Moves the scanner to the next block of DNA and updates currentLine
@@ -70,19 +42,24 @@ public class scannest{
 		while(!start.equals("ORIGIN")) {
 			if(scan.hasNextLine()) {
 				start = scan.nextLine().substring(0, 6);
-				currentLine = scan.nextLine().substring(10).replaceAll("\\s+", "");
-				pointer = 0;
-				endOfBlock = false;
 			} else {
 				return false;
 			}
 		}
+		
+		pointer = 0;
+		boolean endOfBlock = false;
+		currentBlock = "";
+		while(!endOfBlock) {
+			String temp = scan.nextLine();
+			if(temp.equals("//")) {
+				endOfBlock = true;
+			} else {
+				currentBlock += temp.substring(10).replaceAll("\\s+", "");
+			}
+		}
+		
 		return true;
-	}
-	
-	// Returns true if the current DNA BLOCK (not the file!) is over
-	public boolean isEnd() {
-		return endOfBlock;
 	}
 	
 	public long convertBinary(String s) {
@@ -135,7 +112,9 @@ public class scannest{
 		return ret;
 	}
 	
-	
+	public boolean isEnd() {
+		return end;
+	}
 	//testing again
 	public static void main(String[] args) {
 

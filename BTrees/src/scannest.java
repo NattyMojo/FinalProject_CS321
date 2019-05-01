@@ -17,7 +17,7 @@ public class scannest{
 	}
 	
 /*  Gets and returns the DNA long based on the designated substring length
- * 	Returns a 0 if the end of the current DNA block has been reached
+ * 	Returns a -1 if the end of the current DNA block has been reached
  * 	Have not accounted for "n" yet
  */
 	public long nextSubstring() { 
@@ -27,7 +27,7 @@ public class scannest{
 			end = true;
 		} else if(pointer + subLength > currentBlock.length()) {
 			end = true;
-			return 0;
+			return -1;
 		}
 		temp = currentBlock.substring(pointer, pointer+subLength);
 		pointer++;
@@ -86,8 +86,8 @@ public class scannest{
 	
 
 	public String convertString(long l) {
-		if(l == 0) {
-			return "0";
+		if(l == -1) {
+			return "END";
 		}
 		
 		String ret = "";
@@ -122,7 +122,6 @@ public class scannest{
 		File f = new File("test1.gbk");
 		try {
 			scannest testing = new scannest(f,3);
-			
 			while(!testing.isEnd()) {
 				System.out.println(testing.convertString(testing.nextSubstring()));
 			}

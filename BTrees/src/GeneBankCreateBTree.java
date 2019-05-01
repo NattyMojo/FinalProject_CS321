@@ -25,7 +25,7 @@ public class GeneBankCreateBTree {
 			System.exit(0);
 		}
 		else {
-			scannest scan = new scannest(seqLength);
+//			scannest scan = new scannest(seqLength);
 		}
 		
 		

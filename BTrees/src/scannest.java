@@ -53,6 +53,7 @@ public class scannest{
 		}
 		
 		pointer = 0;
+		end = false;
 		boolean endOfBlock = false;
 		currentBlock = "";
 		while(!endOfBlock) {
@@ -121,20 +122,24 @@ public class scannest{
 		return end;
 	}
 	//testing again
-	public static void main(String[] args) {
-
-		
-		File f = new File("test4.gbk");
-		try {
-			scannest testing = new scannest(f,3);
-			while(!testing.isEnd()) {
-				System.out.println(testing.convertString(testing.nextSubstring()));
-			}
-			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		
-	}
+//	public static void main(String[] args) {
+//
+//		
+//		File f = new File("test3.gbk");
+//		try {
+//			scannest testing = new scannest(f,3);
+//			while(!testing.isEnd()) {
+//				System.out.println(testing.convertString(testing.nextSubstring()));
+//				if(testing.isEnd()) {
+//					System.out.println("NEWFILE_________________________________________________________");
+//					testing.nextBlock();
+//				}
+//			}
+//			
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		}
+//		
+//	}
 	
 }

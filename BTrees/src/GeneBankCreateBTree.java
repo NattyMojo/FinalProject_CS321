@@ -1,4 +1,7 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 
 public class GeneBankCreateBTree {
 
@@ -10,6 +13,13 @@ public class GeneBankCreateBTree {
 		}
 		
 		int degree = Integer.parseInt(args[0]);
+		if(degree < 0) {
+			System.out.println("Degree must be a positive number");
+			System.exit(-1);
+		}
+		else if(degree == 0) {
+			degree = 4096;   			//This is wrong?
+		}
 		File gbkFile = new File(args[1]);
 		int seqLength = Integer.parseInt(args[2]);
 		int debug = 0;
@@ -24,9 +34,17 @@ public class GeneBankCreateBTree {
 			System.out.println("Error: Sequence length must be between 1 and 31 (inclusive)\n" + printUsage());
 			System.exit(-1);
 		}
-		else {
-//			scannest scan = new scannest(gbkFile, seqLength);
+		
+		File gbk = new File(args[1]);
+		String BtreeFile = gbk + ",btree.data." + seqLength + "." + degree;
+		
+		BufferedReader read = null;
+		try {
+			read = new BufferedReader(new FileReader(gbk));
+		} catch (FileNotFoundException e) {
+			System.err.println("File \"" + gbk + "\" not found");
 		}
+		
 		
 		
 		

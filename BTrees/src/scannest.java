@@ -124,7 +124,7 @@ public class scannest{
 	public static void main(String[] args) {
 
 		
-		File f = new File("test4.gbk");
+		File f = new File("test1.gbk");
 		try {
 			scannest testing = new scannest(f,3);
 			while(!testing.isEnd()) {

@@ -8,13 +8,23 @@
 public class TreeObject implements Comparable<TreeObject>{
 
 	public Long data;
+	public int duplicateCount;
 	
 	public TreeObject(long num) {
 		data = num;
+		duplicateCount = 0;
 	}
 	
 	public long getData() {
 		return data;
+	}
+	
+	public int getDuplicateCount() {
+		return duplicateCount;
+	}
+	
+	public void increaseDupCount() {
+		duplicateCount++;
 	}
 
 	@Override

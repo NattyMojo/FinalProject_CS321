@@ -23,7 +23,11 @@ public class TreeObject implements Comparable<TreeObject>{
 		return duplicateCount;
 	}
 	
-	public void increaseDupCount() {
+	public void setDuplicateCount(int count) {
+		duplicateCount = count;
+	}
+	
+	public void increaseDuplicateCount() {
 		duplicateCount++;
 	}
 

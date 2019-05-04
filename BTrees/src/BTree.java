@@ -11,6 +11,9 @@ public class BTree {
 	public BTreeNode root;
 	public File file;
 	public RandomAccessFile raf;
+	public int nodeSize;
+	public int insertion;
+	public int rootOffset;
 
 	public class BTreeNode {
 		public int parent;
@@ -85,6 +88,14 @@ public class BTree {
 			return children;
 		}
 		
+		public void addChildren(int offset) {
+			int i = 0;
+			while(children.get(i) < offset) {
+				i++;
+			}
+			children.add(i, offset);
+		}
+		
 		public int getLeftChild(TreeObject t) {
 			if(!keys.contains(t)) {
 				return -1;
@@ -113,6 +124,10 @@ public class BTree {
 			return numKeys;
 		}
 		
+		public void setNumKeys(int num) {
+			numKeys = num;
+		}
+		
 		/**
 		 * Inserts a key into a node assuming the node is not full ***Will fix later
 		 * @param TreeObject to insert
@@ -124,7 +139,7 @@ public class BTree {
 					i++;
 				}
 				if(keys.get(i).compareTo(key) == 0) {
-					keys.get(i).increaseDupCount();
+					keys.get(i).increaseDuplicateCount();
 				}
 			}
 			else {
@@ -151,12 +166,15 @@ public class BTree {
 	
 	public BTree(int degree, String fileName) {
 		tree = new BTreeNode[3];
+		nodeSize = (32 * degree - 3);
+		insertion = 12 + nodeSize;
+		rootOffset = 12;
 		this.degree = degree;
 		this.fileName = fileName;
 		BTreeNode root = new BTreeNode(degree);
 		this.root = root;
 		root.setLeaf(true);
-		root.setOffset(12);
+		root.setOffset(rootOffset);
 		
 		file = new File(fileName);
 		if(file.exists()) {
@@ -201,9 +219,28 @@ public class BTree {
         }
     }
 	
-	public void writeToFile(BTreeNode node) {
+	/**
+	 * Writes node metadata ahead of node information
+	 */
+	public void writeNodeMetaData(BTreeNode node) {
 		try {
 			raf.seek(node.getOffset());
+			raf.writeBoolean(node.isLeaf());
+			raf.writeInt(node.getNumKeys());
+			raf.writeInt(node.getParent());
+		} catch (IOException e) {
+			System.err.println("Could not write Node MetaData");
+			System.exit(-1);
+		}
+	}
+	
+	/**
+	 * Writes a given node to the file at the node's specified offset
+	 * @param Node to write
+	 */
+	public void writeToFile(BTreeNode node) {
+		try {
+			writeNodeMetaData(node);
 			for(int i = 0; i < (2 * degree) - 1; i++) {
 				if(i < node.getNumKeys() + 1) {
 					raf.writeInt(node.getChildren().get(i));
@@ -228,6 +265,42 @@ public class BTree {
 			System.err.println("Could not write to file");
 			System.exit(-1);
 		}
+	}
+	
+	public BTreeNode readNode(int offset) {
+		BTreeNode node = new BTreeNode(0);
+		TreeObject key = null;
+		node.setOffset(offset);
+		try {
+			raf.seek(offset);
+			boolean leaf = raf.readBoolean();
+			int numkeys = raf.readInt();
+			int parent = raf.readInt();
+			node.setLeaf(leaf);
+			node.setNumKeys(numkeys);
+			node.setParent(parent);
+			for(int i = 0; i < (2 * degree) - 1; i++) {
+				if(i < node.getNumKeys()) {
+					int child = raf.readInt();
+					node.addChildren(child);
+					long data = raf.readLong();
+					key = new TreeObject(data);
+					int dup = raf.readInt();
+					key.setDuplicateCount(dup);
+					node.addKey(key);
+				}
+				if(i == node.getNumKeys() && !node.isLeaf()) {
+					int child = raf.readInt();
+					node.addChildren(child);
+				}
+			}
+		} catch (IOException e) {
+			System.err.println("Could not read from disk");
+			System.exit(-1);
+		}
+		
+		return node;
+		
 	}
 	
 	

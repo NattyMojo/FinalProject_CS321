@@ -14,6 +14,7 @@ public class BTree {
 	public int nodeSize;
 	public int insertion;
 	public int rootOffset;
+	public int maxKeys;
 
 	public class BTreeNode {
 		public int parent;
@@ -167,8 +168,9 @@ public class BTree {
 	public BTree(int degree, String fileName) {
 		tree = new BTreeNode[3];
 		nodeSize = (32 * degree - 3);
-		insertion = 12 + nodeSize;
-		rootOffset = 12;
+		insertion = 5 + nodeSize;
+		rootOffset = 5;
+		maxKeys = (2*degree);
 		this.degree = degree;
 		this.fileName = fileName;
 		BTreeNode root = new BTreeNode(degree);
@@ -205,6 +207,18 @@ public class BTree {
 //		}
 //	}
 
+	public void splitNode(BTreeNode node) {
+		int parentOffset = node.parent;
+		BTreeNode parent = readNode(parentOffset);
+		if(parent.getNumKeys() < maxKeys) {
+			int indexOfKeyRemoved = node.getNumKeys()/2;
+			TreeObject key = node.removeKey(node.getKey(indexOfKeyRemoved));
+			parent.addKey(key);
+			BTreeNode newLeftChild = new BTreeNode(degree);
+
+		}
+	}
+	
 	/**
 	 * Writes the tree MetaData to the disk at the beginning of the BTree file
 	 */
@@ -221,6 +235,7 @@ public class BTree {
 	
 	/**
 	 * Writes node metadata ahead of node information
+	 * @param Node to write data of
 	 */
 	public void writeNodeMetaData(BTreeNode node) {
 		try {
@@ -240,7 +255,7 @@ public class BTree {
 	 */
 	public void writeToFile(BTreeNode node) {
 		try {
-			writeNodeMetaData(node);
+			writeNodeMetaData(node);			//writes 9 bytes
 			for(int i = 0; i < (2 * degree) - 1; i++) {
 				if(i < node.getNumKeys() + 1) {
 					raf.writeInt(node.getChildren().get(i));

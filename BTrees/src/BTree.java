@@ -23,10 +23,10 @@ public class BTree {
 		public int degree;
 		public boolean isLeaf;
 		public boolean isFull;
-		public int numKeys;
+		public int numKeys; //ONLY counts unique keys
 		public int offset;
 		
-		public BTreeNode(int t) {					//TODO: Should this be int as an input?
+		public BTreeNode(int t) {					//TODO: Should this be int as an input? Should isLeaf be an input value as well?
 			keys = new LinkedList<TreeObject>();
 			children = new LinkedList<Integer>();
 			degree = t;
@@ -130,23 +130,29 @@ public class BTree {
 		}
 		
 		/**
-		 * Inserts a key into a node assuming the node is not full ***Will fix later
+		 * Inserts a key into a node
+		 * Assumes the node isn't full already
+		 * Requires the node to be a leaf
 		 * @param TreeObject to insert
 		 */
-		public void addKey(TreeObject key) {
-			int i = 0;
-			if(keys.get(i) != null) {
-				while(keys.get(i).compareTo(key) == -1) {
-					i++;
-				}
-				if(keys.get(i).compareTo(key) == 0) {
-					keys.get(i).increaseDuplicateCount();
-				}
+		public void addKeyIfLeaf(TreeObject key) {
+			
+			// Checks for key and duplicates if found
+			if(keys.contains(key)) { 
+				keys.get(keys.indexOf(key)).increaseDuplicateCount();
 			}
-			else {
-				keys.add(i, key);
-				numKeys++;
+			
+			//Searches for an insert point from right to left, moving keys in the process;
+			int i = numKeys - 1;
+
+			while(i >= 0 && keys.get(i).compareTo(key) == 1) {
+				keys.add(i+1, keys.get(i));
+				i--;
 			}
+
+			keys.add(i+1, key);
+			numKeys++;
+
 		}
 		
 		/**
@@ -200,24 +206,38 @@ public class BTree {
 		return root;
 	}
 	
-//	public void insert(long key) {
-//		BTreeNode current = root;
-//		if(!current.isFull() && current.isLeaf()) {
-//			
-//		}
-//	}
-
-	public void splitNode(BTreeNode node) {
-		int parentOffset = node.parent;
-		BTreeNode parent = readNode(parentOffset);
-		if(parent.getNumKeys() < maxKeys) {
-			int indexOfKeyRemoved = node.getNumKeys()/2;
-			TreeObject key = node.removeKey(node.getKey(indexOfKeyRemoved));
-			parent.addKey(key);
-			BTreeNode newLeftChild = new BTreeNode(degree);
-
+	//TODO: I will finish this today
+	public void insert(long key) {
+		if(root == null) {
+			root = new BTreeNode(degree);
+			TreeObject k = new TreeObject(key);
+			root.addKeyIfLeaf(k);
+			
 		}
 	}
+
+	//TODO: This is outdated, it might be much better to have this in Node?
+//	public void splitNode(BTreeNode node) {
+//		int parentOffset = node.parent;
+//		BTreeNode parent = readNode(parentOffset);
+//		if(parent.getNumKeys() < maxKeys) {
+//			int indexOfKeyRemoved = node.getNumKeys()/2;
+//			TreeObject key = node.removeKey(node.getKey(indexOfKeyRemoved));
+//			parent.addKey(key);
+//			
+//			BTreeNode newRightChild = new BTreeNode(degree);
+//			newRightChild.setOffset(insertion);
+//			newRightChild.setParent(parentOffset);
+//			newRightChild.addChildren(node.getLeftChild(node.getKey(indexOfKeyRemoved)));
+//			
+//			for(int i = indexOfKeyRemoved; i < node.getNumKeys(); i++) {
+//				TreeObject temp = node.getKey(i);
+//				newRightChild.addKey(temp);
+//				newRightChild.addChildren(node.getRightChild(temp));
+//			}
+//
+//		}
+//	}
 	
 	/**
 	 * Writes the tree MetaData to the disk at the beginning of the BTree file
@@ -257,7 +277,7 @@ public class BTree {
 		try {
 			writeNodeMetaData(node);			//writes 9 bytes
 			for(int i = 0; i < (2 * degree) - 1; i++) {
-				if(i < node.getNumKeys() + 1) {
+				if(i < node.getNumKeys() + 1 && !node.isLeaf) {
 					raf.writeInt(node.getChildren().get(i));
 				}
 				else {
@@ -302,7 +322,7 @@ public class BTree {
 					key = new TreeObject(data);
 					int dup = raf.readInt();
 					key.setDuplicateCount(dup);
-					node.addKey(key);
+					node.addKeyIfLeaf(key);
 				}
 				if(i == node.getNumKeys() && !node.isLeaf()) {
 					int child = raf.readInt();
@@ -318,5 +338,10 @@ public class BTree {
 		
 	}
 	
+	
+//	public static void main(String[] args) {
+//		BTree tester = new BTree(128, "test");
+//		BTree
+//	}
 	
 }

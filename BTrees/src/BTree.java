@@ -26,11 +26,13 @@ public class BTree {
 		public int numKeys; //ONLY counts unique keys
 		public int offset;
 		
-		public BTreeNode(int t) {					//TODO: Should this be int as an input? Should isLeaf be an input value as well?
+		public BTreeNode(int t, boolean leaf, int offset) {					//TODO: Should this be int as an input? Should isLeaf be an input value as well?
 			keys = new LinkedList<TreeObject>();
 			children = new LinkedList<Integer>();
 			degree = t;
 			numKeys = 0;
+			isLeaf = leaf;
+			this.offset = offset;
 		}
 		
 		public TreeObject getKey(int index) {
@@ -179,7 +181,7 @@ public class BTree {
 		maxKeys = (2*degree);
 		this.degree = degree;
 		this.fileName = fileName;
-		BTreeNode root = new BTreeNode(degree);
+		BTreeNode root = new BTreeNode(degree, true, insertion);
 		this.root = root;
 		root.setLeaf(true);
 		root.setOffset(rootOffset);
@@ -208,12 +210,65 @@ public class BTree {
 	
 	//TODO: I will finish this today
 	public void insert(long key) {
+		//adds initial key if empty
 		if(root == null) {
-			root = new BTreeNode(degree);
+			root = new BTreeNode(degree, true, insertion);
 			TreeObject k = new TreeObject(key);
 			root.addKeyIfLeaf(k);
+			this.writeToFile(root);
+			insertion+=4096;
+			
+		} else {
+			//If root is full a special split occurs
+			
+			
+//			if (root.numKeys == 2*degree-1) {
+//				BTreeNode newRoot = new BTreeNode(degree, false, insertion);
+//				newRoot.children.add(0, root.getOffset());
+//				newRoot.splitChild(0, root);
+//				
+//				
+//				TreeObject k = new TreeObject(key);
+//				BTreeNode currentNode = newRoot;
+//				
+//				this.findLeafAndInsert(currentNode, k);
+//				
+//				this.writeToFile(root);
+//				this.writeToFile(newRoot);
+//				
+//				root = newRoot;
+//				
+//			} else {
+//				//Normal insert
+//				TreeObject k = new TreeObject(key);
+//				this.findLeafAndInsert(root, k);
+//			}
 			
 		}
+		
+	}
+	
+	//Traverses downwards until it finds a leaf and then inserts
+	//Unfortunately this all must be done in BTree to maintain access to read and write
+	public void findLeafAndInsert(BTreeNode currentNode, TreeObject k) {
+		boolean done = false;
+		boolean needSplit = false;
+		
+		while(!done) {
+			//Chooses child for traversal
+			int i = 0;
+			while(currentNode.keys.get(i).compareTo(k) == -1) {
+				i++;
+			}
+			int childOffset = currentNode.children.get(i);
+			currentNode = this.readNode(childOffset);
+			
+			if(currentNode.isFull)
+			if(currentNode.isLeaf()) {
+				done = true;
+			}
+		}
+		
 	}
 
 	//TODO: This is outdated, it might be much better to have this in Node?
@@ -241,6 +296,7 @@ public class BTree {
 	
 	/**
 	 * Writes the tree MetaData to the disk at the beginning of the BTree file
+	 * TODO: Remove this? How is it useful? It also offsets the nodes too much, making them too big if using optimal degree
 	 */
 	public void writeMetaData() {
         try {
@@ -302,6 +358,9 @@ public class BTree {
 		}
 	}
 	
+	//Needs to be fixed to accommodate different functionality for Node methods
+	//Because addKeyIfLeaf and other insertion methods assume initial insertion and sorting,
+	//the node's variables will have to be set directly and strictly in order
 	public BTreeNode readNode(int offset) {
 		BTreeNode node = new BTreeNode(0);
 		TreeObject key = null;
@@ -322,7 +381,7 @@ public class BTree {
 					key = new TreeObject(data);
 					int dup = raf.readInt();
 					key.setDuplicateCount(dup);
-					node.addKeyIfLeaf(key);
+					node.addKeyIfLeaf(key); 
 				}
 				if(i == node.getNumKeys() && !node.isLeaf()) {
 					int child = raf.readInt();

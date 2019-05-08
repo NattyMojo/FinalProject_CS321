@@ -459,7 +459,7 @@ public class BTree {
 	public void writeToFile(BTreeNode node) {
 		try {
 			for(int i = 0; i < (2 * degree) - 1; i++) {
-				if(i < node.getNumKeys() + 1 && !node.isLeaf) {
+				if(i < node.getNumKeys() + 1 && !node.isLeaf()) {
 					raf.writeInt(node.getChildren().get(i));
 				}
 				else {
@@ -473,9 +473,7 @@ public class BTree {
 				}
 				else {
 					raf.writeLong(0);
-				}
-				if(i == node.getNumKeys() && !node.isLeaf()) {
-					raf.writeInt(node.getChildren().get(i+1));
+					raf.writeInt(0);
 				}
 			}
 		} catch (IOException e) {

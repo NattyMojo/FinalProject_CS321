@@ -5,7 +5,6 @@ import java.util.LinkedList;
 
 public class BTree {
 	
-	public BTreeNode[] tree;
 	public int degree;
 	public String fileName;
 	public BTreeNode root;
@@ -190,7 +189,6 @@ public class BTree {
 	}
 	
 	public BTree(int degree, String fileName) {
-		tree = new BTreeNode[3];
 		nodeSize = (32 * degree - 3);
 		insertion = 5 + nodeSize;
 		rootOffset = 5;
@@ -236,7 +234,9 @@ public class BTree {
 			
 		} else {
 			//If root is full a special split occurs
-			splitRoot(root); //This should cover it lol
+			if(root.getNumKeys() == maxKeys) {
+				splitRoot(root); //This should cover it lol				
+			}
 			
 //			if (root.numKeys == 2*degree-1) {
 //				BTreeNode newRoot = new BTreeNode(degree, false, insertion);
@@ -284,7 +284,23 @@ public class BTree {
 				done = true;
 			}
 		}
-		
+	}
+	
+	public TreeObject search(BTreeNode node, long key) {
+		TreeObject object = new TreeObject(key);
+		for(int i = 0; i < node.getNumKeys(); i++) {
+			if(object.compareTo(node.getKey(i)) == 0) {
+				return node.getKey(i);
+			}
+		}
+		if(!node.isLeaf()) {
+			for(int i = 0; i < node.getNumKeys() + 1; i++) {
+				int offset = node.getChildren().get(i);
+				BTreeNode next = readNode(offset);
+				return search(next, key);
+			}
+		}
+		return null;
 	}
 
 	/**

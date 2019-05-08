@@ -91,19 +91,19 @@ public class BTree {
 			return children;
 		}
 		
-		public void addChildren(int offset) {
-			int i = 0;
-			while(children.get(i) < offset) {
-				i++;
+		public void addChildren(TreeObject parentKey, int offset) {
+			if(parentKey == null) {
+				children.add(offset);
 			}
-			children.add(i, offset);
+			int index = keys.indexOf(parentKey);
+			children.add(index, offset);
 		}
 		
-		public int getLeftChild(TreeObject t) {
-			if(!keys.contains(t)) {
+		public int getLeftChild(TreeObject key) {
+			if(!keys.contains(key)) {
 				return -1;
 			}
-			int index = keys.indexOf(t);
+			int index = keys.indexOf(key);
 			if(children.get(index) != null) {
 				return children.get(index);
 			}
@@ -111,11 +111,11 @@ public class BTree {
 				return -1;
 		}
 		
-		public int getRightChild(TreeObject t) {
-			if(!keys.contains(t)) {
+		public int getRightChild(TreeObject key) {
+			if(!keys.contains(key)) {
 				return -1;
 			}
-			int index = keys.indexOf(t);
+			int index = keys.indexOf(key);
 			if(children.get(index+1) != null) {
 				return children.get(index+1);
 			}
@@ -157,6 +157,16 @@ public class BTree {
 
 		}
 		
+		public void addKeyToParent(TreeObject key) {
+			int i = numKeys - 1;
+			while(i >= 0 && keys.get(i).compareTo(key) == 1) {
+				keys.add(i+1, keys.get(i));
+				i--;
+			}
+			keys.add(i+1, key);
+			numKeys++;	
+		}
+		
 		/**
 		 * Removes a given key from the list of keys
 		 * @param TreeObject to remove
@@ -170,6 +180,12 @@ public class BTree {
 			numKeys--;
 			return ret;
 		}	
+		
+		public void deleteChildPointer(int offset) {
+			if(children.contains(offset)) {
+				children.remove(offset);
+			}
+		}
 		
 	}
 	
@@ -216,11 +232,11 @@ public class BTree {
 			TreeObject k = new TreeObject(key);
 			root.addKeyIfLeaf(k);
 			this.writeToFile(root);
-			insertion+=4096;
+			increaseInsertionPoint();
 			
 		} else {
 			//If root is full a special split occurs
-			
+			splitRoot(root); //This should cover it lol
 			
 //			if (root.numKeys == 2*degree-1) {
 //				BTreeNode newRoot = new BTreeNode(degree, false, insertion);
@@ -271,28 +287,116 @@ public class BTree {
 		
 	}
 
-	//TODO: This is outdated, it might be much better to have this in Node?
-//	public void splitNode(BTreeNode node) {
-//		int parentOffset = node.parent;
-//		BTreeNode parent = readNode(parentOffset);
-//		if(parent.getNumKeys() < maxKeys) {
-//			int indexOfKeyRemoved = node.getNumKeys()/2;
-//			TreeObject key = node.removeKey(node.getKey(indexOfKeyRemoved));
-//			parent.addKey(key);
-//			
-//			BTreeNode newRightChild = new BTreeNode(degree);
-//			newRightChild.setOffset(insertion);
-//			newRightChild.setParent(parentOffset);
-//			newRightChild.addChildren(node.getLeftChild(node.getKey(indexOfKeyRemoved)));
-//			
-//			for(int i = indexOfKeyRemoved; i < node.getNumKeys(); i++) {
-//				TreeObject temp = node.getKey(i);
-//				newRightChild.addKey(temp);
-//				newRightChild.addChildren(node.getRightChild(temp));
-//			}
-//
-//		}
-//	}
+	/**
+	 * Splits an inner node into 2 new nodes and leaves the old one
+	 * in the file with no pointers to it
+	 * @param Node to split
+	 */
+	public void splitNode(BTreeNode node) {
+		int parentOffset = node.parent;
+		BTreeNode parent = readNode(parentOffset);
+		int middleIndex = node.getNumKeys()/2;
+		parent.addKeyToParent(node.getKey(middleIndex));
+		
+		BTreeNode newLeft = new BTreeNode(degree, true, insertion);
+		for(int i = 0; i < middleIndex; i++) {
+			TreeObject key = node.getKey(i);
+			newLeft.addKeyIfLeaf(key);
+			if(node.getChildren().isEmpty() == false) {
+				if(node.getLeftChild(key) != -1) {
+					newLeft.addChildren(key, node.getLeftChild(key));
+				}
+				if(node.getRightChild(key) != -1) {
+					newLeft.addChildren(key, node.getRightChild(key));
+				}
+				newLeft.setLeaf(false);
+			}
+		}
+		increaseInsertionPoint();
+		
+		BTreeNode newRight = new BTreeNode(degree, true, insertion);
+		for(int i = middleIndex+1; i < node.getNumKeys(); i++) {
+			TreeObject key = node.getKey(i);
+			newRight.addKeyIfLeaf(key);
+			if(node.getChildren().isEmpty() == false) {
+				if(node.getLeftChild(key) != -1) {
+					newLeft.addChildren(key, node.getLeftChild(key));
+				}
+				if(node.getRightChild(key) != -1) {
+					newRight.addChildren(key, node.getRightChild(key));
+				}
+				newRight.setLeaf(false);
+			}
+		}
+		increaseInsertionPoint();
+		
+		parent.deleteChildPointer(node.getOffset());	//This is because I am not going to be overwriting the current node, it just wont have pointers to it
+		parent.addChildren(parent.getKey(middleIndex), newLeft.getOffset());
+		parent.addChildren(parent.getKey(middleIndex), newRight.getOffset());
+		
+		writeToFile(parent);
+		writeToFile(newLeft);
+		writeToFile(newRight);
+	}
+	
+	/**
+	 * Splits root and creates a new one. Throws away the pointer to the old root
+	 * @param Root node
+	 */
+	public void splitRoot(BTreeNode root) {
+		BTreeNode newRoot = new BTreeNode(0, false, insertion);
+		increaseInsertionPoint();
+		this.root = newRoot;
+		int middleIndex = root.getNumKeys()/2;
+		newRoot.addKeyToParent(root.getKey(middleIndex));
+		newRoot.setNumKeys(1);
+		
+		BTreeNode newLeft = new BTreeNode(degree, true, insertion);
+		for(int i = 0; i < middleIndex; i++) {
+			TreeObject key = root.getKey(i);
+			newLeft.addKeyIfLeaf(key);
+			if(root.getChildren().isEmpty() == false) {
+				if(root.getLeftChild(key) != -1) {
+					newLeft.addChildren(key, root.getLeftChild(key));
+				}
+				if(root.getRightChild(key) != -1) {
+					newLeft.addChildren(key, root.getRightChild(key));
+				}
+				newLeft.setLeaf(false);
+			}
+		}
+		increaseInsertionPoint();
+		
+		BTreeNode newRight = new BTreeNode(degree, true, insertion);
+		for(int i = middleIndex+1; i < root.getNumKeys(); i++) {
+			TreeObject key = root.getKey(i);
+			newRight.addKeyIfLeaf(key);
+			if(root.getChildren().isEmpty() == false) {
+				if(root.getLeftChild(key) != -1) {
+					newLeft.addChildren(key, root.getLeftChild(key));
+				}
+				if(root.getRightChild(key) != -1) {
+					newRight.addChildren(key, root.getRightChild(key));
+				}
+				newRight.setLeaf(false);
+			}
+		}
+		increaseInsertionPoint();
+		
+		newRoot.addChildren(newRoot.getKey(middleIndex), newLeft.getOffset());
+		newRoot.addChildren(newRoot.getKey(middleIndex), newRight.getOffset());
+		
+		writeToFile(newRoot);
+		writeToFile(newLeft);
+		writeToFile(newRight);
+	}
+	
+	/**
+	 * Just increases the insertion point to after the next node, use this after every node create
+	 */
+	public void increaseInsertionPoint() {
+		insertion += nodeSize;
+	}
 	
 	/**
 	 * Writes the tree MetaData to the disk at the beginning of the BTree file
@@ -362,7 +466,7 @@ public class BTree {
 	//Because addKeyIfLeaf and other insertion methods assume initial insertion and sorting,
 	//the node's variables will have to be set directly and strictly in order
 	public BTreeNode readNode(int offset) {
-		BTreeNode node = new BTreeNode(0);
+		BTreeNode node = new BTreeNode(0, false, 0);
 		TreeObject key = null;
 		node.setOffset(offset);
 		try {
@@ -376,7 +480,7 @@ public class BTree {
 			for(int i = 0; i < (2 * degree) - 1; i++) {
 				if(i < node.getNumKeys()) {
 					int child = raf.readInt();
-					node.addChildren(child);
+					node.addChildren(null, child);
 					long data = raf.readLong();
 					key = new TreeObject(data);
 					int dup = raf.readInt();
@@ -385,7 +489,7 @@ public class BTree {
 				}
 				if(i == node.getNumKeys() && !node.isLeaf()) {
 					int child = raf.readInt();
-					node.addChildren(child);
+					node.addChildren(null, child);
 				}
 			}
 		} catch (IOException e) {

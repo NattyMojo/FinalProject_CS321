@@ -192,8 +192,8 @@ public class BTree {
 	
 	public BTree(int degree, String fileName) {
 		nodeSize = (32 * degree - 3);
-		insertion = 5 + nodeSize;
-		rootOffset = 5;
+		insertion =nodeSize;
+		rootOffset = 0;
 		maxKeys = (2*degree);
 		this.degree = degree;
 		this.fileName = fileName;

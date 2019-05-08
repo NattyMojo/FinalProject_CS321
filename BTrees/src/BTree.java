@@ -9,7 +9,9 @@ public class BTree {
 	public String fileName;
 	public BTreeNode root;
 	public File file;
+	public File metadataFile;
 	public RandomAccessFile raf;
+	RandomAccessFile rafm;
 	public int nodeSize;
 	public int insertion;
 	public int rootOffset;
@@ -200,13 +202,18 @@ public class BTree {
 		root.setLeaf(true);
 		root.setOffset(rootOffset);
 		
+		metadataFile = new File("metadata.data");
 		file = new File(fileName);
-		if(file.exists()) {
+		if(file.exists() && metadataFile.exists()) {
 			file.delete();
+			metadataFile.delete();
 		}
 		try {
 			file.createNewFile();
+			metadataFile.createNewFile();
 			raf = new RandomAccessFile(file,"rw");
+			rafm = new RandomAccessFile(metadataFile, "rw");
+			
 		} catch (IOException ioe) {
 			System.err.println("Could not create file \"" + fileName + "\"");
 			System.exit(-1);
@@ -420,9 +427,9 @@ public class BTree {
 	 */
 	public void writeMetaData() {
         try {
-            raf.seek(0); //Moves to beginning of File
-            raf.writeInt(degree); //Writes the degree of the tree
-            //TODO: Should probably add root offset here?
+            rafm.seek(0); //Moves to beginning of File
+            rafm.writeInt(degree); //Writes the degree of the tree
+            rafm.writeInt(rootOffset);
         } catch (IOException ioe) {
             System.err.println("Could not write MetaData");
             System.exit(-1);
@@ -451,7 +458,6 @@ public class BTree {
 	 */
 	public void writeToFile(BTreeNode node) {
 		try {
-			writeNodeMetaData(node);			//writes 9 bytes
 			for(int i = 0; i < (2 * degree) - 1; i++) {
 				if(i < node.getNumKeys() + 1 && !node.isLeaf) {
 					raf.writeInt(node.getChildren().get(i));

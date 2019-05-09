@@ -16,6 +16,7 @@ public class BTree {
 	public int insertion;
 	public int rootOffset;
 	public int maxKeys;
+	public int debug;
 
 	public class BTreeNode {
 		public int parent;
@@ -180,7 +181,7 @@ public class BTree {
 		
 	}
 	
-	public BTree(int degree, String fileName) {
+	public BTree(int degree, String fileName, int debug) {
 		nodeSize = (32 * degree); // Actually this - 3, but for simplicity's sake there's a three byte gap
 		insertion = 0;
 		rootOffset = 0;

@@ -13,7 +13,6 @@ public class scannest{
 	public scannest(File f, int len) throws FileNotFoundException {
 		scan = new Scanner(f);
 		subLength = len;
-		this.nextBlock();
 	}
 	
 /*  Gets and returns the DNA long based on the designated substring length
@@ -125,7 +124,7 @@ public class scannest{
 	public static void main(String[] args) {
 
 		
-		File f = new File("test3.gbk");
+		File f = new File("test1.gbk");
 		try {
 			scannest testing = new scannest(f,3);
 			while(!testing.isEnd()) {

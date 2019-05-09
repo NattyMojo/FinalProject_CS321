@@ -35,16 +35,21 @@ public class GeneBankCreateBTree {
 		int dlevel = Integer.parseInt(args[3]);
 		getDebLev(dlevel);
 		
-		
-		
+		System.out.println("Degree: " + deg +
+						   "\nSequence Length: " + len +
+						   "\nDebug Level: " + dlevel);
 		// file stored in args[1]
 		
 		File genebnk = new File (args[1]);
 		String BTreeFile = (genebnk + ".btree.data." + len + "." + deg);
+		BTree tree = new BTree(deg, BTreeFile, dlevel);
+		scannest seqScan = new scannest(genebnk, deg);
 		
-		
-			
-		
+		while(seqScan.nextBlock()) {
+			while(!seqScan.isEnd()) {
+				tree.insert(seqScan.nextSubstring());
+			}
+		}
 	}
 	
 	

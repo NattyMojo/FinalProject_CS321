@@ -22,7 +22,7 @@ public class GeneBankSearch {
 		int seqLength = Integer.parseInt(btree.getName(),btree.getName().length()-2);
 		int degree = Integer.parseInt(btree.getName(),btree.getName().length());
 		
-		BTree tree = new BTree(degree, btree.getName());
+		BTree tree = new BTree(degree, btree.getName(), debug);
 		
 		try {
 			Scanner queryScan = new Scanner(queryFile);
@@ -31,7 +31,7 @@ public class GeneBankSearch {
 			while(queryScan.hasNextLine()) {
 				String query = queryScan.nextLine();
 				long keyToSearch = converter.convertBinary(query);
-				TreeObject ret = tree.search(tree.getRoot(), keyToSearch);
+				int ret = tree.search(keyToSearch);
 				if(ret != null) {
 					System.out.println("Sequence \"" + query + "\" appears " + ret.getDuplicateCount() + " times");
 				}

@@ -11,7 +11,7 @@ public class BTree {
 	public File file;
 	public File metadataFile;
 	public RandomAccessFile raf;
-	RandomAccessFile rafm;
+	public RandomAccessFile rafm;
 	public int nodeSize;
 	public int insertion;
 	public int rootOffset;
@@ -27,7 +27,7 @@ public class BTree {
 		public int numKeys; //ONLY counts unique keys
 		public int offset;
 		
-		public BTreeNode(int t, boolean leaf, int offset) {					//TODO: Should this be int as an input? Should isLeaf be an input value as well?
+		public BTreeNode(int t, boolean leaf, int offset) {	
 			keys = new LinkedList<TreeObject>();
 			children = new LinkedList<Integer>();
 			degree = t;
@@ -135,7 +135,7 @@ public class BTree {
 		/**
 		 * Inserts a key into a node
 		 * Assumes the node isn't full already
-		 * Requires the node to be a leaf
+		 * Used by BTree insert() and it's helper methods
 		 * @param TreeObject to insert
 		 */
 		public void addKey(TreeObject key) {
@@ -219,7 +219,12 @@ public class BTree {
 		return root;
 	}
 	
-	//TODO: I will finish this today
+	/**
+	 * Inserts a key using helping methods findLeafAndInsert and SplitChild
+	 * Splits upwards if full nodes are found while attempting insert
+	 * @param Key that is being entered
+	 */
+	
 	public void insert(long key) {
 		if(root.getNumKeys() == maxKeys) {
 			BTreeNode oldRoot = root;
@@ -230,22 +235,26 @@ public class BTree {
 			oldRoot.parent = root.getOffset();
 			root.children.add(oldRoot.getOffset());
 			
-			this.alternateSplitChild(root, 0, oldRoot);
+			this.splitChild(root, 0, oldRoot);
 			
 			TreeObject k = new TreeObject(key);
 			this.findLeafAndInsert(root, k);
 			this.writeMetaData();
+			this.rootOffset = newRoot.offset;
 		}
 		TreeObject k = new TreeObject(key);
 		this.findLeafAndInsert(root, k);
 	}
 	
 	//Traverses downwards until it finds a leaf and then inserts
-	//Unfortunately this all must be done in BTree to maintain access to read and write
+	//This all must be done in BTree to maintain access to read and write
+	//Assumes that the initially given node isn't full
 	public void findLeafAndInsert(BTreeNode currentNode, TreeObject k) {
 		if(currentNode.isLeaf) {
 			currentNode.addKey(k);
 		} else {
+			
+			//Finds the child to traverse to
 			int i = 0;
 			while(currentNode.keys.get(i).compareTo(k) == -1) {
 				i++;
@@ -254,10 +263,10 @@ public class BTree {
 			BTreeNode nextNode = this.readNode(childOffset);
 			
 			if(nextNode.isFull()) {
-				this.alternateSplitChild(currentNode, i, nextNode);
+				BTreeNode rightNode = this.splitChild(currentNode, i, nextNode);
+				
+				//splitChild returns rightNode just in case it needs to be traversed immediately afterwards here
 				if (k.compareTo(currentNode.keys.get(i)) == 1) {
-					int rightChildOffset = currentNode.children.get(i+1);
-					BTreeNode rightNode = this.readNode(rightChildOffset);
 					this.findLeafAndInsert(rightNode, k);
 				} else {
 					this.findLeafAndInsert(nextNode, k);
@@ -272,25 +281,55 @@ public class BTree {
 		
 	}
 	
-	public TreeObject search(BTreeNode node, long key) {
+	//Starts a search without the need for a node
+	//Returns the number of occurrences of the key in the file
+	public int search(long key) {
 		TreeObject object = new TreeObject(key);
-		for(int i = 0; i < node.getNumKeys(); i++) {
-			if(object.compareTo(node.getKey(i)) == 0) {
-				return node.getKey(i);
+		TreeObject foundKey = searchHelper(root, object);
+		
+		if(foundKey == null) return 0;
+		else return foundKey.duplicateCount + 1;
+	}
+	
+	//Recursive method to look for a key
+	public TreeObject searchHelper(BTreeNode node, TreeObject key) {
+		
+		//Base case at leaf if key hasn't been found yet
+		if(node.isLeaf) {
+			for(int i = 0; i < node.numKeys; i++) {
+				if(node.keys.get(i).compareTo(key) == 0) {
+					return node.keys.get(i);
+				}
 			}
+			
+			return null;
 		}
-		if(!node.isLeaf()) {
-			for(int i = 0; i < node.getNumKeys() + 1; i++) {
-				int offset = node.getChildren().get(i);
-				BTreeNode next = readNode(offset);
-				return search(next, key);
-			}
+		
+		int i = 0;
+		while(node.keys.get(i).compareTo(key) == -1) {
+			i++;
 		}
-		return null;
+		
+		//Checks to see if it's on the last child first to avoid null pointers looking at empty list spots
+		if(i == node.numKeys){
+			BTreeNode child = this.readNode(node.children.get(i));
+			return this.searchHelper(child, key);
+		}
+		else if(node.keys.get(i).compareTo(key) == 0){
+			return node.keys.get(i);
+		}
+		else {
+			BTreeNode child = this.readNode(node.children.get(i));
+			return this.searchHelper(child, key);
+		}
 	}
 
-	//assumes child is full and parent is not
-	public void alternateSplitChild(BTreeNode parent, int childIndex, BTreeNode child) {
+	//Takes a parent node, a child node, and the index of the child pointer on the parent node
+	//Splits the node in half, and sends the middle key upwards
+	//Operates under the assumption that the parent isn't already full
+	//Creates a new node for the right side of the split at the current insertion point and pushes the point forward
+	//Returns the rightChild for temporary use by the findLeafAndInsert class to prevent an unnecessary disk access
+	public BTreeNode splitChild(BTreeNode parent, int childIndex, BTreeNode child) {
 		
 		boolean newLeaf = child.isLeaf();
 		BTreeNode rightChild = new BTreeNode(degree, newLeaf, insertion);
@@ -311,14 +350,18 @@ public class BTree {
 			}
 		}
 		
+		//Adds the key and child pointers to the parent
 		parent.children.add(childIndex+1, rightChild.getOffset());
 		parent.keys.add(childIndex, child.keys.removeLast());
 		child.numKeys--;
 		parent.numKeys++;
 		
+		//Writes to file
 		this.writeToFile(parent);
 		this.writeToFile(child);
 		this.writeToFile(rightChild);
+		
+		return rightChild;
 		
 	}
 	
@@ -342,35 +385,25 @@ public class BTree {
             System.exit(-1);
         }
     }
-	
+
 	/**
-	 * Writes node metadata ahead of node information
-	 * @param Node to write data of
+	 * Writes a given node to the file at the node's specified offset
+	 * Overwrites empty portions with -1 to "erase" old data
+	 * @param Node to write
 	 */
-	public void writeNodeMetaData(BTreeNode node) {
+	public void writeToFile(BTreeNode node) {
 		try {
 			raf.seek(node.getOffset());
 			raf.writeBoolean(node.isLeaf());
 			raf.writeInt(node.getNumKeys());
 			raf.writeInt(node.getParent());
-		} catch (IOException e) {
-			System.err.println("Could not write Node MetaData");
-			System.exit(-1);
-		}
-	}
-	
-	/**
-	 * Writes a given node to the file at the node's specified offset
-	 * @param Node to write
-	 */
-	public void writeToFile(BTreeNode node) {
-		try {
+			
 			for(int i = 0; i < (2 * degree) - 1; i++) {
 				if(i < node.getNumKeys() + 1 && !node.isLeaf()) {
 					raf.writeInt(node.getChildren().get(i));
 				}
 				else {
-					raf.writeInt(0);
+					raf.writeInt(-1);
 				}
 				if(i < node.getNumKeys()) {
 					long data = node.getKey(i).getData();
@@ -379,8 +412,8 @@ public class BTree {
 					raf.writeInt(dup);
 				}
 				else {
-					raf.writeLong(0);
-					raf.writeInt(0);
+					raf.writeLong(-1);
+					raf.writeInt(-1);
 				}
 			}
 		} catch (IOException e) {
@@ -389,36 +422,45 @@ public class BTree {
 		}
 	}
 	
-	//Needs to be fixed to accommodate different functionality for Node methods
-	//Because addKeyIfLeaf and other insertion methods assume initial insertion and sorting,
-	//the node's variables will have to be set directly and strictly in order
+	//Tries it's hardest to recreate the node based on what's on disk at the given offset
 	public BTreeNode readNode(int offset) {
-		BTreeNode node = new BTreeNode(0, false, 0);
-		TreeObject key = null;
-		node.setOffset(offset);
+		BTreeNode node = new BTreeNode(degree, true, offset);
+		
 		try {
 			raf.seek(offset);
+			
 			boolean leaf = raf.readBoolean();
 			int numkeys = raf.readInt();
 			int parent = raf.readInt();
+			
 			node.setLeaf(leaf);
 			node.setNumKeys(numkeys);
 			node.setParent(parent);
+			
+			//Loop that recreates the node, ignores -1 as they indicate no data
 			for(int i = 0; i < (2 * degree) - 1; i++) {
-				if(i < node.getNumKeys()) {
-					int child = raf.readInt();
-					node.addChildren(null, child);
-					long data = raf.readLong();
-					key = new TreeObject(data);
-					int dup = raf.readInt();
-					key.setDuplicateCount(dup);
-					node.addKey(key); 
+				int child = raf.readInt();
+				long key = raf.readLong();
+				int dupCount = raf.readInt();
+				
+				if(child != -1) {
+					node.children.add(child);
 				}
-				if(i == node.getNumKeys() && !node.isLeaf()) {
-					int child = raf.readInt();
-					node.addChildren(null, child);
+				if(key != -1) {
+					TreeObject k = new TreeObject(key);
+					node.keys.add(k);
+					node.numKeys++;
+				}
+				if(dupCount != -1) {
+					node.keys.get(i).setDuplicateCount(dupCount);
 				}
 			}
+			
+			int lastChild = raf.readInt();
+			if(lastChild != -1) {
+				node.children.add(lastChild);
+			}
+			
 		} catch (IOException e) {
 			System.err.println("Could not read from disk");
 			System.exit(-1);

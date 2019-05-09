@@ -470,10 +470,4 @@ public class BTree {
 		
 	}
 	
-	
-//	public static void main(String[] args) {
-//		BTree tester = new BTree(128, "test");
-//		BTree
-//	}
-	
 }

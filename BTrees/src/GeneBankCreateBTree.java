@@ -23,24 +23,24 @@ public class GeneBankCreateBTree {
 		
 		BufferedReader in = null; 
 		//cache
-		int ca = Integer.parseInt(args[0]);
-		tryCache(ca);
+//		int ca = Integer.parseInt(args[4]);
+//		tryCache(ca);
 		//degree
-		int deg = Integer.parseInt(args[1]);
+		int deg = Integer.parseInt(args[0]);
 		getDegree(deg);
 		//sequence length
-		int len = Integer.parseInt(args[3]);
+		int len = Integer.parseInt(args[2]);
 		seqLeng(len);
 		//debug level
-		int dlevel = Integer.parseInt(args[4]);
+		int dlevel = Integer.parseInt(args[3]);
 		getDebLev(dlevel);
 		
 		
 		
-		// file stored in args[2]
+		// file stored in args[1]
 		
-		File genebnk = new File (args[2]);
-		String BTreeFile = (genebnk + ".btree.data." + seqLeng + "." + deg);
+		File genebnk = new File (args[1]);
+		String BTreeFile = (genebnk + ".btree.data." + len + "." + deg);
 		
 		
 			

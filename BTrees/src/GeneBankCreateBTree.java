@@ -14,14 +14,14 @@ public class GeneBankCreateBTree {
 
 	public static final int SLENGTH_MAX = 31;
 	public static final int DEBUG_MAX = 1;
+	
 
 	public static void main(String[] args) throws IOException {
 		if (args.length < 4) {
 			badUsage();
 		}
 		
-		
-		
+		BufferedReader in = null; 
 		//cache
 		int ca = Integer.parseInt(args[0]);
 		tryCache(ca);
@@ -34,6 +34,15 @@ public class GeneBankCreateBTree {
 		//debug level
 		int dlevel = Integer.parseInt(args[4]);
 		getDebLev(dlevel);
+		
+		
+		
+		// file stored in args[2]
+		
+		File genebnk = new File (args[2]);
+		String BTreeFile = (genebnk + ".btree.data." + seqLeng + "." + deg);
+		
+		
 			
 		
 	}

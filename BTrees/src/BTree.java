@@ -147,10 +147,11 @@ public class BTree {
 			}
 			
 			//Searches for an insert point from right to left, moving keys in the process;
-			int i = numKeys - 1;
-
-			while(i >= 0 && keys.get(i).compareTo(key) == 1) {
-				i--;
+			int i = 0;
+			if(numKeys > 0) {
+				while(i <= numKeys && keys.get(i).compareTo(key) == 1) {
+					i++;
+				}
 			}
 
 			keys.add(i, key);

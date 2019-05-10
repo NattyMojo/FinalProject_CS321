@@ -19,7 +19,7 @@ public class GeneBankCreateBTree {
 	
 
 	public static void main(String[] args) throws IOException {
-		if (args.length != 4 || args.length !=3) {
+		if (!(args.length == 4 || args.length == 3)) {
 			badUsage();
 		}
 		

@@ -194,6 +194,7 @@ public class BTree {
 		this.root = root;
 		root.setLeaf(true);
 		root.setOffset(rootOffset);
+		this.increaseInsertionPoint();
 		
 		metadataFile = new File(fileName + ".m");
 		file = new File(fileName);
@@ -297,12 +298,14 @@ public class BTree {
 		increaseInsertionPoint();
 
 		//copies and removes children, except the one being sent up
-		for(int i = 0; i < degree - 1; i++) {
-			rightChild.keys.add(i, child.keys.remove(i+degree));
-			child.numKeys--;
-			rightChild.numKeys++;
+		if(!child.isLeaf) {
+			for(int i = 0; i < degree - 1; i++) {
+				rightChild.keys.add(i, child.keys.remove(i+degree));
+				child.numKeys--;
+				rightChild.numKeys++;
+			}
 		}
-
+		
 		//copies and removes keys, except the one being sent up
 		if(!newLeaf) {
 			for(int i = 0; i < degree; i++) {

@@ -460,6 +460,10 @@ public class BTree {
 					raf.writeInt(-1);
 				}
 			}
+			
+			if(node.isFull && !node.isFull) {
+				raf.writeInt(node.getChildren().getLast());
+			}
 		} catch (IOException e) {
 			System.err.println("Could not write to file");
 			System.exit(-1);

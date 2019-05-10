@@ -461,7 +461,7 @@ public class BTree {
 				}
 			}
 			
-			if(node.isFull && !node.isFull) {
+			if(node.isFull() && !node.isLeaf()) {
 				raf.writeInt(node.getChildren().getLast());
 			}
 		} catch (IOException e) {
@@ -510,7 +510,8 @@ public class BTree {
 			}
 			
 		} catch (IOException e) {
-			System.err.println("Could not read from disk");
+//			System.err.println("Could not read from disk");
+			e.printStackTrace();
 			System.exit(-1);
 		}
 		

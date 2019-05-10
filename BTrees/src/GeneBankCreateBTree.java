@@ -62,6 +62,7 @@ public class GeneBankCreateBTree {
 //			FileWriter fw = new FileWriter(debug);
 //			BufferedWriter bw = new BufferedWriter(fw);
 			tree.inOrderTraversalDump(tree.root, pw, len);
+			pw.close();
 		}
 	}
 	

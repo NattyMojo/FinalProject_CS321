@@ -280,6 +280,9 @@ public class BTree {
 			while(currentNode.getNumKeys() > i && currentNode.keys.get(i).compareTo(k) == -1 ) {
 				i++;
 			}
+			if(i < currentNode.numKeys && currentNode.keys.get(i).compareTo(k) == 0) {
+				currentNode.keys.get(i).increaseDuplicateCount();
+			}
 			int childOffset = currentNode.children.get(i);
 			BTreeNode nextNode = this.readNode(childOffset);
 			
@@ -373,16 +376,21 @@ public class BTree {
 		}
 		
 		//Checks to see if it's on the last child first to avoid null pointers looking at empty list spots
-		if(i == node.numKeys){
-			BTreeNode child = this.readNode(node.children.get(i));
-			return this.searchHelper(child, key);
-		}
-		else if(node.keys.get(i).compareTo(key) == 0){
-			return node.keys.get(i);
+		if(!node.children.isEmpty()) {
+			if(i == node.numKeys){
+				BTreeNode child = this.readNode(node.children.get(i));
+				return this.searchHelper(child, key);
+			}
+			else if(node.keys.get(i).compareTo(key) == 0){
+				return node.keys.get(i);
+			}
+			else{
+				BTreeNode child = this.readNode(node.children.get(i));
+				return this.searchHelper(child, key);
+			}
 		}
 		else {
-			BTreeNode child = this.readNode(node.children.get(i));
-			return this.searchHelper(child, key);
+			return null;
 		}
 	}
 
@@ -398,7 +406,7 @@ public class BTree {
 		if(node.isLeaf) {
 			for(int i = 0; i < node.numKeys; i++) {
 				pw.print(node.getKey(i).getDuplicateCount() + " ");
-	            pw.println(scannest.convertString(node.getKey(i).getData(), subLen));
+				pw.println(scannest.convertString(node.getKey(i).getData(), subLen));
 			}
 		} else {
 			for(int i = 0; i < node.numKeys; i++) {
@@ -406,7 +414,6 @@ public class BTree {
 				int offset = node.children.get(i);
 				BTreeNode leftChild = this.readNode(offset);
 				inOrderTraversalDump(leftChild, pw, subLen);
-				
 				pw.write(node.getKey(i).duplicateCount + " " + scannest.convertString(node.getKey(i).getData(), subLen)  + "\n");
 			}
 			

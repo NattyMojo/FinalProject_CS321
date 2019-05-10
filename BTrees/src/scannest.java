@@ -72,15 +72,15 @@ public class scannest{
 		for(int i = 0; i < s.length(); i++) {
 			char temp = s.charAt(i);
 			
-			if(temp == 'a') 	   { //A is 00
+			if(temp == 'a' || temp == 'A') 	   { //A is 00
 				ret = ret << 2;
-			} else if(temp == 't') { //T is 11
+			} else if(temp == 't' || temp == 'T') { //T is 11
 				ret = ret << 2;
 				ret = ret|3;
-			} else if(temp == 'c') { //C is 01
+			} else if(temp == 'c' || temp == 'C') { //C is 01
 				ret = ret << 2;
 				ret = ret|1;
-			} else if(temp == 'g') { //G is 10
+			} else if(temp == 'g' || temp == 'G') { //G is 10
 				ret = ret << 2;
 				ret = ret|2;
 			}

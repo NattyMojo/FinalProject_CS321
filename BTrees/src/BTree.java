@@ -221,8 +221,8 @@ public class BTree {
 			try {
 				raf = new RandomAccessFile(file,"rw");
 				rafm = new RandomAccessFile(metadataFile, "rw");
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
+			}
+			catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
 			this.root = readNode(0);

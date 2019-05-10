@@ -44,13 +44,15 @@ public class GeneBankSearch {
 			
 			while(queryScan.hasNextLine()) {
 				String query = queryScan.nextLine();
-				long keyToSearch = converter.convertBinary(query);
-				int ret = tree.search(keyToSearch);
-				if(ret != 0) {
-					System.out.println("Sequence \"" + query + "\" appears " + ret + " times");
-				}
-				else {
-					System.out.println("Sequence \"" + query + "\" appears 0 times");
+				if(query.length() == seqLength) {
+					long keyToSearch = converter.convertBinary(query);
+					int ret = tree.search(keyToSearch);
+					if(ret != 0) {
+						System.out.println("Sequence \"" + query + "\" appears " + ret + " times");
+					}
+					else {
+						System.out.println("Sequence \"" + query + "\" appears 0 times");
+					}
 				}
 			}
 		} catch (FileNotFoundException e) {

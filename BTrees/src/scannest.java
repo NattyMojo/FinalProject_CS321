@@ -90,14 +90,14 @@ public class scannest{
 	}
 	
 
-	public String convertString(long l) {
+	public static String convertString(long l, int subLen) {
 		if(l == -1) {
 			return "END";
 		}
 		
 		String ret = "";
 		String binary = Long.toBinaryString(l);
-		int offset = 2*subLength - binary.length();
+		int offset = 2*subLen - binary.length();
 		if(offset != 0) {
 			for(int i = 0; i < offset; i++) {
 				binary = "0" + binary;
@@ -120,26 +120,5 @@ public class scannest{
 	public boolean isEnd() {
 		return end;
 	}
-	//testing again
-	public static void main(String[] args) {
-
-		
-		File f = new File("test1.gbk");
-		try {
-			scannest testing = new scannest(f,3);
-			while(!testing.isEnd()) {
-				System.out.println(testing.convertString(testing.nextSubstring()));
-				if(testing.isEnd()) {
-					System.out.println("NEWFILE_________________________________________________________");
-					testing.nextBlock();
-				}
-			}
-			
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		
-	}
-
 	
 }

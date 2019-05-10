@@ -1,7 +1,9 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -17,17 +19,15 @@ public class GeneBankCreateBTree {
 	
 
 	public static void main(String[] args) throws IOException {
-		if (args.length < 4) {
+		if (args.length != 4 || args.length !=3) {
 			badUsage();
 		}
 		
-		BufferedReader in = null; 
-		//cache
-//		int ca = Integer.parseInt(args[4]);
-//		tryCache(ca);
+		
+
 		//degree
 		int deg = Integer.parseInt(args[0]);
-		getDegree(deg);
+		deg = getDegree(deg);
 		//sequence length
 		int len = Integer.parseInt(args[2]);
 		seqLeng(len);
@@ -45,33 +45,22 @@ public class GeneBankCreateBTree {
 		BTree tree = new BTree(deg, BTreeFile, dlevel);
 		scannest seqScan = new scannest(genebnk, len);
 		
+		
+		
+		
 		while(seqScan.nextBlock()) {
 			while(!seqScan.isEnd()) {
 				tree.insert(seqScan.nextSubstring());
 			}
 		}
-	}
-	
-	
-	
-	public static boolean tryCache(int t) {
-		boolean checkCache = false;
-		try {
-			if (t == 0) {
-				checkCache = false;
-				return checkCache;
-			}
-				
-			else if (t == 1) {
-				checkCache = true;
-				return checkCache;
-			}
-		} catch (NumberFormatException e) {
-			badUsage();
+		
+		if(dlevel == 1) {
+			File debug = new File("BTreeFile" + ".debug");
+			FileWriter fw = new FileWriter(debug);
+			BufferedWriter bw = new BufferedWriter(fw);
+			tree.inOrderTraversalDump(tree.root, bw, len);
 		}
-		return checkCache;			
-	} // end try cache method
-	
+	}
 	
 	
 	
@@ -96,13 +85,7 @@ public class GeneBankCreateBTree {
 	
 	
 	public static int getOptimalDegree(){
-		double opt;
-		opt = 4096;
-		opt = opt+12;
-		opt = opt-4;
-		opt = opt-5;
-		opt /= (2 * (16));
-		return (int) Math.floor(opt);
+		return 128;
 	}
 	
 	
@@ -148,7 +131,14 @@ public class GeneBankCreateBTree {
 
                      
 	
-	public static void badUsage() {}
+	public static void badUsage() {
+		System.out.println("Please use the following format to run the program: ");
+		System.out.println("java GeneBankCreateBTree <degree> <gbk file> <sequence length> [<debug level>]\n");
+		System.out.println("Using a degree of 0 will set the program to use the optimal degree");
+		System.out.println("31 is the maximum sequence length");
+		System.out.println("Debug level 0 will print normal command line responses, and level 1 will create a file with an in order traversal of the tree");
+		System.exit(0);
+	}
 	
 }
 	

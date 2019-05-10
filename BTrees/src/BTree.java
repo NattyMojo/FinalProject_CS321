@@ -1,3 +1,4 @@
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -194,7 +195,7 @@ public class BTree {
 		root.setLeaf(true);
 		root.setOffset(rootOffset);
 		
-		metadataFile = new File("metadata.data");
+		metadataFile = new File(fileName + ".m");
 		file = new File(fileName);
 		if(file.exists() && metadataFile.exists()) {
 			file.delete();
@@ -283,6 +284,47 @@ public class BTree {
 		
 	}
 	
+	//Takes a parent node, a child node, and the index of the child pointer on the parent node
+	//Splits the node in half, and sends the middle key upwards
+	//Operates under the assumption that the parent isn't already full
+	//Creates a new node for the right side of the split at the current insertion point and pushes the point forward
+	//Returns the rightChild for temporary use by the findLeafAndInsert class to prevent an unnecessary disk access
+	public BTreeNode splitChild(BTreeNode parent, int childIndex, BTreeNode child) {
+
+		boolean newLeaf = child.isLeaf();
+		BTreeNode rightChild = new BTreeNode(degree, newLeaf, insertion);
+		rightChild.parent = parent.getOffset();
+		increaseInsertionPoint();
+
+		//copies and removes children, except the one being sent up
+		for(int i = 0; i < degree - 1; i++) {
+			rightChild.keys.add(i, child.keys.remove(i+degree));
+			child.numKeys--;
+			rightChild.numKeys++;
+		}
+
+		//copies and removes keys, except the one being sent up
+		if(!newLeaf) {
+			for(int i = 0; i < degree; i++) {
+				rightChild.children.add(i, child.children.remove(i+degree));
+			}
+		}
+
+		//Adds the key and child pointers to the parent
+		parent.children.add(childIndex+1, rightChild.getOffset());
+		parent.keys.add(childIndex, child.keys.removeLast());
+		child.numKeys--;
+		parent.numKeys++;
+
+		//Writes to file
+		this.writeToFile(parent);
+		this.writeToFile(child);
+		this.writeToFile(rightChild);
+
+		return rightChild;
+
+	}
+
 	//Starts a search without the need for a node
 	//Returns the number of occurrences of the key in the file
 	public int search(long key) {
@@ -326,47 +368,44 @@ public class BTree {
 		}
 	}
 
-	//Takes a parent node, a child node, and the index of the child pointer on the parent node
-	//Splits the node in half, and sends the middle key upwards
-	//Operates under the assumption that the parent isn't already full
-	//Creates a new node for the right side of the split at the current insertion point and pushes the point forward
-	//Returns the rightChild for temporary use by the findLeafAndInsert class to prevent an unnecessary disk access
-	public BTreeNode splitChild(BTreeNode parent, int childIndex, BTreeNode child) {
-		
-		boolean newLeaf = child.isLeaf();
-		BTreeNode rightChild = new BTreeNode(degree, newLeaf, insertion);
-		rightChild.parent = parent.getOffset();
-		increaseInsertionPoint();
-		
-		//copies and removes children, except the one being sent up
-		for(int i = 0; i < degree - 1; i++) {
-			rightChild.keys.add(i, child.keys.remove(i+degree));
-			child.numKeys--;
-			rightChild.numKeys++;
-		}
-		
-		//copies and removes keys, except the one being sent up
-		if(!newLeaf) {
-			for(int i = 0; i < degree; i++) {
-				rightChild.children.add(i, child.children.remove(i+degree));
+	/**
+	 * Takes a node and traverses down the tree from there, in order
+	 * Prints all of the node data into a separate file determined by the BufferedWriter
+	 * Sublength is used to help convert the longs back into strings
+	 * @param node
+	 * @param bw
+	 * @param subLen 
+	 */
+	public void inOrderTraversalDump(BTreeNode node, BufferedWriter bw, int subLen)  {
+		if(node.isLeaf) {
+			for(int i = 0; i < node.numKeys; i++) {
+				try {
+					bw.write(node.getKey(i).duplicateCount + " " + scannest.convertString(node.getKey(i).getData(), subLen)  + "\n");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
+		} else {
+			for(int i = 0; i < node.numKeys; i++) {
+				
+				int offset = node.children.get(i);
+				BTreeNode leftChild = this.readNode(offset);
+				inOrderTraversalDump(leftChild, bw, subLen);
+				
+				try {
+					bw.write(node.getKey(i).duplicateCount + " " + scannest.convertString(node.getKey(i).getData(), subLen)  + "\n");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			//Traverses final right child
+			int rOffset = node.children.getLast();
+			BTreeNode rightChild = this.readNode(rOffset);
+			inOrderTraversalDump(rightChild, bw, subLen);
 		}
-		
-		//Adds the key and child pointers to the parent
-		parent.children.add(childIndex+1, rightChild.getOffset());
-		parent.keys.add(childIndex, child.keys.removeLast());
-		child.numKeys--;
-		parent.numKeys++;
-		
-		//Writes to file
-		this.writeToFile(parent);
-		this.writeToFile(child);
-		this.writeToFile(rightChild);
-		
-		return rightChild;
-		
 	}
-	
+	 
 	/**
 	 * Just increases the insertion point to after the next node, use this after every node create
 	 */

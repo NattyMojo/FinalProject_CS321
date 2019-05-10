@@ -5,7 +5,8 @@
 
  The project is a BTree creation tool that reads in GeneBank files and takes an input of
  sequence length to create substrings of the gene sequences and stores them into a BTree
- for later searching using the provided class.
+ for later searching using the provided class. Files necessary for this program to operate 
+is: BTree.java, GeneBankCreateBtree.java, GeneBankSearch.java, TreeObject.java, scannest.java
 
 # Usage
 
@@ -37,6 +38,19 @@ java GeneBankSearch <btree-file> <query-file> [<debug-level>]
  created by you that has different sequences to search, all sequences must be the same length
  and only 1 sequence per line.
 
-# Testing
+Run:
 
+GeneBankCreateBTree.java:
+java GeneBankCreateBTree <degree> <gbk file> <sequence length> [<debug level>]
+			
+GeneBankCreateBTree must be run first!
+GeneBankSearch.java: java GeneBankSearch <btree file> <query file> [<debug level>]
+
+
+File Map:
+
+FinalProject_CS321/BTrees >>
+		README
+		src >> 
+			BTree.java, GeneBankCreateBtree.java, GeneBankSearch.java, TreeObject.java, scannest.java 
 

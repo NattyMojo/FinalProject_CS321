@@ -22,6 +22,7 @@ public class GeneBankCreateBTree {
 		if (!(args.length == 4 || args.length == 3)) {
 			badUsage();
 		}
+		int dlevel = 0;
 		//degree
 		int deg = Integer.parseInt(args[0]);
 		deg = getDegree(deg);
@@ -29,8 +30,15 @@ public class GeneBankCreateBTree {
 		int len = Integer.parseInt(args[2]);
 		seqLeng(len);
 		//debug level
-		int dlevel = Integer.parseInt(args[3]);
-		getDebLev(dlevel);
+		if(args.length == 4) {	
+			if(Integer.parseInt(args[3]) == 0 || Integer.parseInt(args[3]) == 1) {
+				dlevel = Integer.parseInt(args[3]);
+				getDebLev(dlevel);				
+			}
+			else {
+				badUsage();
+			}
+		}
 		
 		System.out.println("Degree: " + deg +
 						   "\nSequence Length: " + len +

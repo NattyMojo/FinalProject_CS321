@@ -18,7 +18,12 @@ public class GeneBankSearch {
 		
 		//Check to see if there is debug level
 		if(args.length == 3) {
-			debug = Integer.parseInt(args[2]);
+			if(Integer.parseInt(args[2]) == 0) {				
+				debug = Integer.parseInt(args[2]);
+			}
+			else {
+				printUsage();
+			}
 		}
 		
 		if(btree.getName().subSequence(21, 23).charAt(1) == '.') {			
@@ -47,12 +52,7 @@ public class GeneBankSearch {
 				if(query.length() == seqLength) {
 					long keyToSearch = converter.convertBinary(query);
 					int ret = tree.search(keyToSearch);
-					if(ret != 0) {
-						System.out.println("Sequence \"" + query + "\" appears " + ret + " times");
-					}
-					else {
-						System.out.println("Sequence \"" + query + "\" appears 0 times");
-					}
+					System.out.println("Sequence \"" + query + "\" appears " + ret + " times");
 				}
 			}
 		} catch (FileNotFoundException e) {

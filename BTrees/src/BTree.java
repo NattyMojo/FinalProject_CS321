@@ -405,12 +405,11 @@ public class BTree {
 	public void inOrderTraversalDump(BTreeNode node, PrintWriter pw, int subLen)  {
 		if(node.isLeaf) {
 			for(int i = 0; i < node.numKeys; i++) {
-				pw.print(node.getKey(i).getDuplicateCount() + " ");
+				pw.print((node.getKey(i).getDuplicateCount()+1) + " ");
 				pw.println(scannest.convertString(node.getKey(i).getData(), subLen));
 			}
 		} else {
 			for(int i = 0; i < node.numKeys; i++) {
-				
 				int offset = node.children.get(i);
 				BTreeNode leftChild = this.readNode(offset);
 				inOrderTraversalDump(leftChild, pw, subLen);

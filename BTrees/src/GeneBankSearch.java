@@ -13,14 +13,28 @@ public class GeneBankSearch {
 		File btree = new File(args[0]);
 		File queryFile = new File(args[1]);
 		int debug = 0;
+		int seqLength = 0;
+		int degree = 0;
 		
 		//Check to see if there is debug level
-		if(args[2] != null) {
+		if(args.length == 3) {
 			debug = Integer.parseInt(args[2]);
 		}
 		
-		int seqLength = Integer.parseInt(btree.getName(),btree.getName().length()-2);
-		int degree = Integer.parseInt(btree.getName(),btree.getName().length());
+		if(btree.getName().subSequence(21, 23).charAt(1) == '.') {			
+			seqLength = Integer.parseInt(btree.getName().substring(21, 22));
+		}
+		else {
+			seqLength = Integer.parseInt(btree.getName().substring(21, 23));
+		}
+		
+		if(seqLength < 10) {
+			degree = Integer.parseInt(btree.getName().substring(23));
+		}
+		else {
+			degree = Integer.parseInt(btree.getName().substring(24));
+		}
+		
 		
 		BTree tree = new BTree(degree, btree.getName(), debug);
 		
@@ -32,8 +46,8 @@ public class GeneBankSearch {
 				String query = queryScan.nextLine();
 				long keyToSearch = converter.convertBinary(query);
 				int ret = tree.search(keyToSearch);
-				if(ret != null) {
-					System.out.println("Sequence \"" + query + "\" appears " + ret.getDuplicateCount() + " times");
+				if(ret != 0) {
+					System.out.println("Sequence \"" + query + "\" appears " + ret + " times");
 				}
 				else {
 					System.out.println("Sequence \"" + query + "\" appears 0 times");

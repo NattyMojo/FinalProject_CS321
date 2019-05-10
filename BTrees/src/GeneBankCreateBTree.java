@@ -52,14 +52,15 @@ public class GeneBankCreateBTree {
 		}
 		
 		if(dlevel == 1) {
-			File debug = new File(BTreeFile + ".debug.txt");
+			File debug = new File("dump.txt");
 			if(debug.exists()) {
 				debug.delete();
 			}
 			debug.createNewFile();
-			FileWriter fw = new FileWriter(debug);
-			BufferedWriter bw = new BufferedWriter(fw);
-			tree.inOrderTraversalDump(tree.root, bw, len);
+			PrintWriter pw = new PrintWriter(debug);
+//			FileWriter fw = new FileWriter(debug);
+//			BufferedWriter bw = new BufferedWriter(fw);
+			tree.inOrderTraversalDump(tree.root, pw, len);
 		}
 	}
 	

@@ -1,6 +1,7 @@
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 import java.util.LinkedList;
 
@@ -56,7 +57,7 @@ public class BTree {
 		 */
 		public boolean isFull() {
 			boolean ret = false;
-			if(keys.size() >= (2*degree)-1) {
+			if(keys.size() >= maxKeys) {
 				ret = true;
 			}
 			return ret;
@@ -170,8 +171,8 @@ public class BTree {
 			TreeObject ret = null;
 			if(keys.contains(key)) {
 				ret = keys.remove(keys.indexOf(key));
+				numKeys--;
 			}
-			numKeys--;
 			return ret;
 		}	
 		
@@ -261,7 +262,7 @@ public class BTree {
 			
 			//Finds the child to traverse to
 			int i = 0;
-			while(currentNode.numKeys > i && currentNode.keys.get(i).compareTo(k) == -1 ) {
+			while(currentNode.getNumKeys() > i && currentNode.keys.get(i).compareTo(k) == -1 ) {
 				i++;
 			}
 			int childOffset = currentNode.children.get(i);
@@ -378,33 +379,26 @@ public class BTree {
 	 * @param bw
 	 * @param subLen 
 	 */
-	public void inOrderTraversalDump(BTreeNode node, BufferedWriter bw, int subLen)  {
+	public void inOrderTraversalDump(BTreeNode node, PrintWriter pw, int subLen)  {
 		if(node.isLeaf) {
 			for(int i = 0; i < node.numKeys; i++) {
-				try {
-					bw.write(node.getKey(i).duplicateCount + " " + scannest.convertString(node.getKey(i).getData(), subLen)  + "\n");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				pw.print(node.getKey(i).getDuplicateCount() + " ");
+	            pw.println(scannest.convertString(node.getKey(i).getData(), subLen));
 			}
 		} else {
 			for(int i = 0; i < node.numKeys; i++) {
 				
 				int offset = node.children.get(i);
 				BTreeNode leftChild = this.readNode(offset);
-				inOrderTraversalDump(leftChild, bw, subLen);
+				inOrderTraversalDump(leftChild, pw, subLen);
 				
-				try {
-					bw.write(node.getKey(i).duplicateCount + " " + scannest.convertString(node.getKey(i).getData(), subLen)  + "\n");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				pw.write(node.getKey(i).duplicateCount + " " + scannest.convertString(node.getKey(i).getData(), subLen)  + "\n");
 			}
 			
 			//Traverses final right child
 			int rOffset = node.children.getLast();
 			BTreeNode rightChild = this.readNode(rOffset);
-			inOrderTraversalDump(rightChild, bw, subLen);
+			inOrderTraversalDump(rightChild, pw, subLen);
 		}
 	}
 	 
@@ -441,14 +435,14 @@ public class BTree {
 			raf.writeInt(node.getNumKeys());
 			raf.writeInt(node.getParent());
 			
-			for(int i = 0; i < (2 * degree) - 1; i++) {
+			for(int i = 0; i < maxKeys; i++) {
 				if(i < node.getNumKeys() + 1 && !node.isLeaf()) {
 					raf.writeInt(node.getChildren().get(i));
 				}
 				else {
 					raf.writeInt(-1);
 				}
-				if(i < node.getNumKeys() - 1) {
+				if(i < node.numKeys) {
 					long data = node.getKey(i).getData();
 					raf.writeLong(data);
 					int dup = node.getKey(i).getDuplicateCount();
@@ -462,6 +456,9 @@ public class BTree {
 			
 			if(node.isFull() && !node.isLeaf()) {
 				raf.writeInt(node.getChildren().getLast());
+			}
+			else {
+				raf.writeInt(-1);
 			}
 		} catch (IOException e) {
 			System.err.println("Could not write to file");
@@ -496,7 +493,6 @@ public class BTree {
 				if(key != -1) {
 					TreeObject k = new TreeObject(key);
 					node.keys.add(k);
-					node.numKeys++;
 				}
 				if(dupCount != -1) {
 					node.keys.get(i).setDuplicateCount(dupCount);

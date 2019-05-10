@@ -1,5 +1,6 @@
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
@@ -184,7 +185,7 @@ public class BTree {
 		
 	}
 	
-	public BTree(int degree, String fileName, int debug) {
+	public BTree(int degree, String fileName, int debug, boolean searching) {
 		nodeSize = (32 * degree); // Actually this - 3, but for simplicity's sake there's a three byte gap
 		insertion = 0;
 		rootOffset = 0;
@@ -199,21 +200,33 @@ public class BTree {
 		
 		metadataFile = new File(fileName + ".m");
 		file = new File(fileName);
-		if(file.exists() && metadataFile.exists()) {
-			file.delete();
-			metadataFile.delete();
-		}
-		try {
-			file.createNewFile();
-			metadataFile.createNewFile();
-			raf = new RandomAccessFile(file,"rw");
-			rafm = new RandomAccessFile(metadataFile, "rw");
+		if(searching == false) {
+			if(file.exists() && metadataFile.exists()) {
+				file.delete();
+				metadataFile.delete();
+			}
+			try {
+				file.createNewFile();
+				metadataFile.createNewFile();
+				raf = new RandomAccessFile(file,"rw");
+				rafm = new RandomAccessFile(metadataFile, "rw");
 			
-		} catch (IOException ioe) {
-			System.err.println("Could not create file \"" + fileName + "\"");
-			System.exit(-1);
-		}		
-		writeMetaData();
+			} catch (IOException ioe) {
+				System.err.println("Could not create file \"" + fileName + "\"");
+				System.exit(-1);
+			}		
+			writeMetaData();
+		}
+		else {
+			try {
+				raf = new RandomAccessFile(file,"rw");
+				rafm = new RandomAccessFile(metadataFile, "rw");
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			this.root = readNode(0);
+		}
 	}
 	
 	/**

@@ -36,7 +36,7 @@ public class GeneBankSearch {
 		}
 		
 		
-		BTree tree = new BTree(degree, btree.getName(), debug);
+		BTree tree = new BTree(degree, btree.getName(), debug, true);
 		
 		try {
 			Scanner queryScan = new Scanner(queryFile);
@@ -54,7 +54,6 @@ public class GeneBankSearch {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

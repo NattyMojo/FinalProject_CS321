@@ -22,9 +22,6 @@ public class GeneBankCreateBTree {
 		if (!(args.length == 4 || args.length == 3)) {
 			badUsage();
 		}
-		
-		
-
 		//degree
 		int deg = Integer.parseInt(args[0]);
 		deg = getDegree(deg);
@@ -55,7 +52,11 @@ public class GeneBankCreateBTree {
 		}
 		
 		if(dlevel == 1) {
-			File debug = new File("BTreeFile" + ".debug");
+			File debug = new File(BTreeFile + ".debug.txt");
+			if(debug.exists()) {
+				debug.delete();
+			}
+			debug.createNewFile();
 			FileWriter fw = new FileWriter(debug);
 			BufferedWriter bw = new BufferedWriter(fw);
 			tree.inOrderTraversalDump(tree.root, bw, len);

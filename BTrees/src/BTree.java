@@ -142,21 +142,21 @@ public class BTree {
 		 */
 		public void addKey(TreeObject key) {
 			
-			// Checks for key and duplicates if found
-			if(keys.contains(key)) { 
-				keys.get(keys.indexOf(key)).increaseDuplicateCount();
-			}
-			
 			//Searches for an insert point from right to left, moving keys in the process;
 			int i = 0;
 			if(numKeys > 0) {
-				while(i < numKeys && keys.get(i).compareTo(key) == 1) {
+				while(i < numKeys && keys.get(i).compareTo(key) == -1) {
 					i++;
 				}
 			}
 
-			keys.add(i, key);
-			numKeys++;
+			if(i < numKeys && keys.get(i).compareTo(key) == 0) {
+				keys.get(i).increaseDuplicateCount();
+			}
+			else {				
+				keys.add(i, key);
+				numKeys++;
+			}
 
 		}
 		
@@ -256,6 +256,7 @@ public class BTree {
 	public void findLeafAndInsert(BTreeNode currentNode, TreeObject k) {
 		if(currentNode.isLeaf) {
 			currentNode.addKey(k);
+			this.writeToFile(currentNode);
 		} else {
 			
 			//Finds the child to traverse to
@@ -298,18 +299,16 @@ public class BTree {
 		increaseInsertionPoint();
 
 		//copies and removes children, except the one being sent up
-		if(!child.isLeaf) {
 			for(int i = 0; i < degree - 1; i++) {
-				rightChild.keys.add(i, child.keys.remove(i+degree));
+				rightChild.keys.add(i, child.keys.remove(degree));
 				child.numKeys--;
 				rightChild.numKeys++;
 			}
-		}
 		
 		//copies and removes keys, except the one being sent up
 		if(!newLeaf) {
 			for(int i = 0; i < degree; i++) {
-				rightChild.children.add(i, child.children.remove(i+degree));
+				rightChild.children.add(i, child.children.remove(degree));
 			}
 		}
 
@@ -449,7 +448,7 @@ public class BTree {
 				else {
 					raf.writeInt(-1);
 				}
-				if(i < node.getNumKeys()) {
+				if(i < node.getNumKeys() - 1) {
 					long data = node.getKey(i).getData();
 					raf.writeLong(data);
 					int dup = node.getKey(i).getDuplicateCount();

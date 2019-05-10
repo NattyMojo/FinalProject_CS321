@@ -39,6 +39,7 @@ public class GeneBankCreateBTree {
 		
 		File genebnk = new File (args[1]);
 		String BTreeFile = (genebnk + ".btree.data." + len + "." + deg);
+		System.out.println("\nData file name: " + BTreeFile);
 		BTree tree = new BTree(deg, BTreeFile, dlevel, false);
 		scannest seqScan = new scannest(genebnk, len);
 		

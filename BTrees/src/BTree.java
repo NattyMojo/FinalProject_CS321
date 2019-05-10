@@ -221,11 +221,13 @@ public class BTree {
 			try {
 				raf = new RandomAccessFile(file,"rw");
 				rafm = new RandomAccessFile(metadataFile, "rw");
+				this.root.setOffset(readRootOffset());
+				this.rootOffset = this.root.offset;
 			}
 			catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
-			this.root = readNode(0);
+			this.root = readNode(this.rootOffset);
 		}
 	}
 	
@@ -257,8 +259,8 @@ public class BTree {
 			
 			TreeObject k = new TreeObject(key);
 			this.findLeafAndInsert(root, k);
-			this.writeMetaData();
 			this.rootOffset = newRoot.offset;
+			this.writeMetaData();
 		}
 		TreeObject k = new TreeObject(key);
 		this.findLeafAndInsert(root, k);
@@ -362,11 +364,11 @@ public class BTree {
 				}
 			}
 			
-			return null;
+//			return null;
 		}
 		
 		int i = 0;
-		while(node.keys.get(i).compareTo(key) == -1) {
+		while(i < node.numKeys && node.keys.get(i).compareTo(key) == -1) {
 			i++;
 		}
 		
@@ -525,6 +527,17 @@ public class BTree {
 		
 		return node;
 		
+	}
+	
+	public int readRootOffset() {
+		try {
+			rafm.seek(4);
+			return rafm.readInt();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return -1;
 	}
 	
 }

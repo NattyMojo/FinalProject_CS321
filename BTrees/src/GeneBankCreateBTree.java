@@ -92,7 +92,7 @@ public class GeneBankCreateBTree {
 	public static int seqLeng(int len) {
 		int sLeng = 0;
 		try {
-			if (len < 1 || len > DEBUG_MAX) {
+			if (len < 1 || len > SLENGTH_MAX) {
 				badUsage();
 			}
 			else {

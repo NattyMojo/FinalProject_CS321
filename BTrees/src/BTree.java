@@ -260,7 +260,7 @@ public class BTree {
 			
 			//Finds the child to traverse to
 			int i = 0;
-			while(currentNode.keys.get(i).compareTo(k) == -1 && currentNode.numKeys > i) {
+			while(currentNode.numKeys > i && currentNode.keys.get(i).compareTo(k) == -1 ) {
 				i++;
 			}
 			int childOffset = currentNode.children.get(i);
